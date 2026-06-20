@@ -2,9 +2,9 @@
 
 ## Project Motivation
 
-This project analyzes long-term weekly influenza surveillance data for Canada using WHO FluNet data. A previous Canadian respiratory virus surveillance dataset contained only 42 weekly observations, which was too short for reliable seasonal time series modeling. WHO FluNet provides a longer weekly surveillance record and is more appropriate for demonstrating SARIMA-based seasonal time series analysis.
+This project analyzes long-term weekly influenza surveillance data for Canada using WHO FluNet data. A previous Canadian respiratory virus surveillance dataset contained only 42 weekly observations, which was too short for reliable seasonal time series modeling. WHO FluNet provides a longer weekly surveillance record and is more appropriate for demonstrating seasonal ARIMA-based time series analysis.
 
-The main goal is to study Canadian influenza seasonality and compare non-seasonal ARIMA models with seasonal ARIMA models using influenza percent positivity.
+The project focuses on statistical forecasting of surveillance data. It does not claim causality or explain biological mechanisms.
 
 ## Research Questions
 
@@ -15,7 +15,7 @@ The main goal is to study Canadian influenza seasonality and compare non-seasona
 
 ## Data Source
 
-The intended data source is WHO FluNet influenza surveillance data.
+The raw data source is WHO FluNet influenza surveillance data.
 
 Expected raw file:
 
@@ -23,49 +23,91 @@ Expected raw file:
 data/raw/VIW_FNT.csv
 ```
 
-Raw data may not be committed to GitHub depending on file size, data access terms, and licensing. Place the downloaded raw file in `data/raw/` before running the full analysis.
+Raw data may not be committed to GitHub depending on file size, data access terms, and licensing.
 
-## Main Analysis Period
+## Variables Used
 
-The initial analysis focuses on Canada during the pre-COVID period:
+The current pipeline inspects the raw CSV after cleaning names with `janitor::clean_names()`. In the provided WHO FluNet export, the main variables are:
+
+- country: `country_area_territory`
+- week start date: `iso_weekstartdate`
+- ISO year: `iso_year`
+- ISO week: `iso_week`
+- specimens processed: `spec_processed_nb`
+- total influenza positives: `inf_all`
+
+The target variable is:
+
+```text
+percent_positive = inf_all / spec_processed_nb * 100
+```
+
+## Analysis Period
+
+The main analysis focuses on Canada during the pre-COVID period:
 
 ```text
 2015-01-01 to 2019-12-31
 ```
 
-This period avoids pandemic-related disruptions and should provide approximately five years of weekly observations, if the data support it.
+This period was chosen to avoid COVID-era disruptions in influenza circulation, testing, and surveillance reporting.
 
-## Target Variable
+## Model Workflow
 
-The target outcome is influenza percent positivity:
+The reproducible workflow:
+
+1. Load `data/raw/VIW_FNT.csv`.
+2. Clean column names.
+3. Inspect dimensions, column names, missing values, and unique countries.
+4. Filter to Canada.
+5. Calculate weekly influenza percent positivity.
+6. Filter to 2015-2019 and remove invalid target values.
+7. Save cleaned data.
+8. Create exploratory plots, seasonal plots, STL decomposition, ACF, and PACF.
+9. Split chronologically into training and final 52-week hold-out test set.
+10. Fit non-seasonal ARIMA using `forecast::auto.arima(seasonal = FALSE)`.
+11. Fit SARIMA using `forecast::auto.arima(seasonal = TRUE)`.
+12. Forecast the hold-out period.
+13. Compare MAE and RMSE.
+14. Run residual diagnostics and Ljung-Box tests.
+
+The weekly time series uses `frequency = 52` for annual influenza seasonality. The default script uses `stepwise = TRUE` and `approximation = FALSE` so the project runs reliably on a local laptop. To run a slower exhaustive search, set `use_full_arima_search <- TRUE` in `scripts/run_analysis.R`.
+
+This project intentionally does not implement VAR, Granger causality, ARCH/GARCH, LSTM, deep learning, or a broad model zoo. The focus is ARIMA vs SARIMA for seasonal time series forecasting.
+
+## Output Files
+
+Cleaned data:
 
 ```text
-percent_positive = INF_ALL / SPEC_PROCESSED_NB * 100
+data/processed/canada_flu_percent_positive_2015_2019.csv
 ```
 
-If these exact column names are not present in the raw file, the preprocessing script should be updated after inspecting the dataset to identify equivalent columns for:
+Figures:
 
-- number of specimens processed or tested
-- total influenza positives
-- country
-- year
-- week
+```text
+figures/canada_percent_positive_timeseries.png
+figures/seasonal_plot_by_iso_week.png
+figures/stl_decomposition.png
+figures/acf_percent_positive.png
+figures/pacf_percent_positive.png
+figures/forecast_comparison_arima_sarima.png
+figures/arima_checkresiduals.png
+figures/sarima_checkresiduals.png
+```
 
-## Methods
+Tables:
 
-Planned methods include:
+```text
+tables/model_comparison.csv
+tables/residual_diagnostics.csv
+```
 
-- Exploratory time series analysis
-- STL decomposition
-- ACF and PACF plots
-- ADF stationarity test
-- Non-seasonal ARIMA using `forecast::auto.arima(seasonal = FALSE)`
-- Seasonal ARIMA using `forecast::auto.arima(seasonal = TRUE)`
-- Chronological train/test split using the final 52 weeks as a hold-out set if possible
-- Forecast accuracy comparison using MAE and RMSE
-- Residual diagnostics using `forecast::checkresiduals()` and Ljung-Box tests
+Report summary:
 
-This project intentionally does not implement VAR, Granger causality, ARCH/GARCH, LSTM, deep learning, or a broad model zoo. The focus is proper seasonal time series analysis using a sufficiently long public health surveillance dataset.
+```text
+reports/analysis_summary.txt
+```
 
 ## Repository Structure
 
@@ -91,8 +133,7 @@ who-flunet-influenza-time-series/
 
 ## Reproducibility Instructions
 
-1. Clone or download this repository.
-2. Install the required R packages:
+Install the required R packages:
 
 ```r
 install.packages(c(
@@ -109,16 +150,25 @@ install.packages(c(
 ))
 ```
 
-3. Download the WHO FluNet raw data file and place it here:
+Place the WHO FluNet raw CSV here:
 
 ```text
 data/raw/VIW_FNT.csv
 ```
 
-4. Run the main workflow script:
+Run the full analysis from the project root:
 
 ```r
 source("scripts/run_analysis.R")
 ```
 
-The first version of the project includes checks that stop with a helpful message if the raw data file is missing.
+In RStudio, open `who-flunet-influenza-time-series.Rproj` first so the working directory is the project root.
+
+The script prints progress messages, selected ARIMA/SARIMA orders, ADF test results, forecast accuracy results, and residual diagnostic summaries.
+It also saves the main results to `reports/analysis_summary.txt`, so you do not need to copy console output manually.
+
+## Interpretation Notes
+
+If SARIMA has lower hold-out error than ARIMA, this supports the usefulness of recurring seasonal structure for forecasting this surveillance series. If SARIMA does not improve hold-out accuracy, seasonality may still be visually present but may not improve short-term forecast accuracy in this particular split.
+
+All results should be interpreted as statistical forecasts of surveillance data, with limitations related to reporting changes, missingness, testing behavior, and the choice to avoid the COVID-era period.

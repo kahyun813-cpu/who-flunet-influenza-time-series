@@ -17,13 +17,13 @@ The raw file is not included in this repository by default. It may be excluded f
 Processed analysis-ready files will be written to:
 
 ```text
-data/processed/
+data/processed/canada_flu_percent_positive_2015_2019.csv
 ```
 
 The main target variable is:
 
 ```text
-percent_positive = INF_ALL / SPEC_PROCESSED_NB * 100
+percent_positive = inf_all / spec_processed_nb * 100
 ```
 
-If the raw file uses different column names, inspect the data and update `R/preprocessing.R` with the equivalent fields for country, year, week, specimens processed, and influenza positives.
+The current pipeline detects the WHO FluNet columns after `janitor::clean_names()`, including `country_area_territory`, `iso_weekstartdate`, `iso_year`, `iso_week`, `spec_processed_nb`, and `inf_all`.

@@ -1,57 +1,60 @@
-# Evaluation and residual diagnostic functions.
+# Evaluation functions for chronological train/test splitting and accuracy.
 
-calculate_accuracy_table <- function(forecasts, test_ts) {
-  nonseasonal_accuracy <- forecast::accuracy(forecasts$nonseasonal, test_ts)
-  seasonal_accuracy <- forecast::accuracy(forecasts$seasonal, test_ts)
+split_train_test <- function(processed_data, holdout_weeks = 52) {
+  n_obs <- nrow(processed_data)
+
+  if (n_obs <= holdout_weeks + 52) {
+    stop(
+      paste0(
+        "Not enough observations for a ",
+        holdout_weeks,
+        "-week hold-out set. Found only ",
+        n_obs,
+        " observations after cleaning."
+      ),
+      call. = FALSE
+    )
+  }
+
+  split_index <- n_obs - holdout_weeks
+
+  list(
+    train = processed_data[seq_len(split_index), ],
+    test = processed_data[(split_index + 1):n_obs, ]
+  )
+}
+
+calculate_mae <- function(actual, predicted) {
+  mean(abs(actual - predicted), na.rm = TRUE)
+}
+
+calculate_rmse <- function(actual, predicted) {
+  sqrt(mean((actual - predicted)^2, na.rm = TRUE))
+}
+
+create_model_comparison <- function(forecasts, test_data) {
+  actual <- test_data$percent_positive
+  arima_predicted <- as.numeric(forecasts$arima$mean)
+  sarima_predicted <- as.numeric(forecasts$sarima$mean)
 
   tibble::tibble(
-    model = c("Non-seasonal ARIMA", "Seasonal ARIMA"),
+    model = c("ARIMA", "SARIMA"),
     mae = c(
-      nonseasonal_accuracy["Test set", "MAE"],
-      seasonal_accuracy["Test set", "MAE"]
+      calculate_mae(actual, arima_predicted),
+      calculate_mae(actual, sarima_predicted)
     ),
     rmse = c(
-      nonseasonal_accuracy["Test set", "RMSE"],
-      seasonal_accuracy["Test set", "RMSE"]
+      calculate_rmse(actual, arima_predicted),
+      calculate_rmse(actual, sarima_predicted)
     )
-  )
+  ) |>
+    dplyr::arrange(.data$rmse)
 }
 
-save_accuracy_table <- function(
-  accuracy_table,
-  output_file = here::here("tables", "forecast_accuracy.csv")
+save_model_comparison <- function(
+  comparison_table,
+  output_file = here::here("tables", "model_comparison.csv")
 ) {
-  readr::write_csv(accuracy_table, output_file)
-  output_file
-}
-
-run_ljung_box_test <- function(model, lag = 24) {
-  stats::Box.test(
-    stats::residuals(model),
-    lag = lag,
-    type = "Ljung-Box",
-    fitdf = length(model$coef)
-  )
-}
-
-save_residual_diagnostics <- function(
-  nonseasonal_model,
-  seasonal_model,
-  output_file = here::here("tables", "ljung_box_tests.csv")
-) {
-  nonseasonal_test <- run_ljung_box_test(nonseasonal_model)
-  seasonal_test <- run_ljung_box_test(seasonal_model)
-
-  diagnostics <- tibble::tibble(
-    model = c("Non-seasonal ARIMA", "Seasonal ARIMA"),
-    statistic = c(
-      unname(nonseasonal_test$statistic),
-      unname(seasonal_test$statistic)
-    ),
-    p_value = c(nonseasonal_test$p.value, seasonal_test$p.value),
-    lag = c(unname(nonseasonal_test$parameter), unname(seasonal_test$parameter))
-  )
-
-  readr::write_csv(diagnostics, output_file)
+  readr::write_csv(comparison_table, output_file)
   output_file
 }
