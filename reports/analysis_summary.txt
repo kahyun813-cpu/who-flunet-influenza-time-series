@@ -1,0 +1,85 @@
+Seasonal Time Series Forecasting of Canadian Influenza Percent Positivity Using WHO FluNet Data
+
+Analysis scope
+--------------
+Country: Canada
+Period: 2015-01-01 to 2019-12-31
+Target: percent_positive = inf_all / spec_processed_nb * 100
+Seasonal frequency: 52 weeks
+
+Cleaned data
+------------
+Cleaned observations: 261
+Date range: 2015-01-05 to 2019-12-30
+Cleaned data file: C:/Users/kahyu/Desktop/Github/who-flunet-influenza-time-series/data/processed/canada_flu_percent_positive_2015_2019.csv
+
+ADF stationarity test
+---------------------
+
+	Augmented Dickey-Fuller Test
+
+data:  stats::na.omit(ts_data)
+Dickey-Fuller = -4.7462, Lag order = 6, p-value = 0.01
+alternative hypothesis: stationary
+
+
+Selected models
+---------------
+ARIMA order: p=2, d=0, q=1
+SARIMA order: p=2, d=0, q=2, P=1, D=1, Q=1, Frequency=52
+
+ARIMA model summary
+-------------------
+Series: train_ts 
+ARIMA(2,0,1) with non-zero mean 
+
+Coefficients:
+         ar1      ar2      ma1     mean
+      1.9241  -0.9454  -0.7192  10.2956
+s.e.  0.0320   0.0309   0.0814   1.4881
+
+sigma^2 = 2.65:  log likelihood = -398.67
+AIC=807.33   AICc=807.63   BIC=824.04
+
+SARIMA model summary
+--------------------
+Series: train_ts 
+ARIMA(2,0,2)(1,1,1)[52] 
+
+Coefficients:
+         ar1      ar2      ma1     ma2     sar1     sma1
+      1.7774  -0.8407  -0.7223  0.2473  -0.3156  -0.4548
+s.e.  0.0751   0.0703   0.1120  0.0963   0.2043   0.2986
+
+sigma^2 = 2.686:  log likelihood = -314.5
+AIC=643   AICc=643.75   BIC=664.39
+
+Forecast accuracy comparison
+----------------------------
+# A tibble: 2 × 3
+  model    mae  rmse
+  <chr>  <dbl> <dbl>
+1 SARIMA  1.67  2.20
+2 ARIMA   7.48  8.77
+
+Residual diagnostics
+--------------------
+# A tibble: 2 × 6
+  model  ljung_box_lag model_df test_df statistic p_value
+  <chr>          <dbl>    <int>   <int>     <dbl>   <dbl>
+1 ARIMA             24        4      20      11.1   0.943
+2 SARIMA            24        6      18      25.0   0.124
+
+Interpretation
+--------------
+SARIMA had lower RMSE than ARIMA in this chronological hold-out split. This supports the usefulness of recurring seasonal structure for forecasting Canadian influenza percent positivity during the 2015-2019 pre-COVID period.
+
+Limitations
+-----------
+These results are statistical forecasts of surveillance data. They should not be interpreted as causal evidence or as explanations of biological mechanisms. Surveillance data can be affected by testing behavior, reporting changes, missingness, and other public health system factors.
+
+Generated files
+---------------
+Model comparison table: C:/Users/kahyu/Desktop/Github/who-flunet-influenza-time-series/tables/model_comparison.csv
+Residual diagnostics table: C:/Users/kahyu/Desktop/Github/who-flunet-influenza-time-series/tables/residual_diagnostics.csv
+Forecast comparison figure: C:/Users/kahyu/Desktop/Github/who-flunet-influenza-time-series/figures/forecast_comparison_arima_sarima.png

@@ -10,20 +10,10 @@
 .DS_Store
 Thumbs.db
 
-# Raw and processed data are usually excluded from GitHub.
+# Raw data are excluded from GitHub.
 # Keep the folder structure with README files.
 data/raw/*
-data/processed/*
 !data/raw/.gitkeep
-!data/processed/.gitkeep
-
-# Generated outputs
-figures/*
-tables/*
-reports/*
-!figures/.gitkeep
-!tables/.gitkeep
-!reports/.gitkeep
 
 # Logs and temporary files
 *.log

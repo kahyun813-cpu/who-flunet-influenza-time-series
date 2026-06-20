@@ -107,6 +107,7 @@ Report summary:
 
 ```text
 reports/analysis_summary.txt
+reports/final_report.md
 ```
 
 ## Repository Structure
