@@ -4,8 +4,6 @@
 
 This project analyzes weekly Canadian influenza surveillance data from WHO FluNet using statistical time-series methods in R. The main objective is to examine whether Canadian influenza percent positivity shows recurring annual seasonality and to compare non-seasonal ARIMA and seasonal ARIMA forecasting models.
 
-The previous version of this project used a Canadian respiratory virus surveillance dataset with only 42 weekly observations. That short time span was not sufficient for reliable seasonal time-series modeling. This version uses WHO FluNet data because it provides a longer weekly surveillance history.
-
 The analysis focuses on statistical forecasting of surveillance data. It does not claim causality and does not explain biological mechanisms.
 
 ## 2. Data
