@@ -2,7 +2,7 @@
 
 ## Project Motivation
 
-This project analyzes long-term weekly influenza surveillance data for Canada using WHO FluNet data. A previous Canadian respiratory virus surveillance dataset contained only 42 weekly observations, which was too short for reliable seasonal time series modeling. WHO FluNet provides a longer weekly surveillance record and is more appropriate for demonstrating seasonal ARIMA-based time series analysis.
+This project analyzes long-term weekly influenza surveillance data for Canada using WHO FluNet data. WHO FluNet provides weekly surveillance records that are appropriate for demonstrating seasonal ARIMA-based time series analysis.
 
 The project focuses on statistical forecasting of surveillance data. It does not claim causality or explain biological mechanisms.
 

@@ -212,7 +212,7 @@ This analysis has several limitations:
 
 ## 8. Conclusion
 
-This project provides a reproducible R-based seasonal time-series analysis of Canadian influenza percent positivity using WHO FluNet data. Compared with the earlier short dataset, the WHO FluNet series provides enough weekly observations for a more appropriate seasonal modeling workflow.
+This project provides a reproducible R-based seasonal time-series analysis of Canadian influenza percent positivity using WHO FluNet data.
 
 The results show recurring annual seasonality in Canadian influenza percent positivity during 2015-2019. In the hold-out forecast comparison, SARIMA outperformed non-seasonal ARIMA, supporting the value of seasonal structure for forecasting this surveillance series.
 
