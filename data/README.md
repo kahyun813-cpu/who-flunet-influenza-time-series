@@ -4,6 +4,14 @@ This folder stores raw and processed data for the WHO FluNet influenza time seri
 
 ## Raw Data
 
+The WHO FluNet data can be downloaded from the WHO Global Influenza Programme surveillance outputs page:
+
+```text
+https://www.who.int/teams/global-influenza-programme/surveillance-and-monitoring/influenza-surveillance-outputs
+```
+
+Use the `Download the FluNet dataset (CSV)` link under the `Download data` section.
+
 Place the WHO FluNet raw file here:
 
 ```text

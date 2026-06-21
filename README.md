@@ -17,6 +17,14 @@ The project focuses on statistical forecasting of surveillance data. It does not
 
 The raw data source is WHO FluNet influenza surveillance data.
 
+Original data download page:
+
+```text
+https://www.who.int/teams/global-influenza-programme/surveillance-and-monitoring/influenza-surveillance-outputs
+```
+
+On this WHO Global Influenza Programme page, use the `Download the FluNet dataset (CSV)` link under the `Download data` section.
+
 Expected raw file:
 
 ```text
